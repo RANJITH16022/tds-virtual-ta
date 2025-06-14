@@ -1,11 +1,17 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import base64
 import os
 from process_data import answer_question
 
 app = Flask(__name__)
+CORS(app)  # Allow cross-origin requests
 
-@app.route('/api/', methods=['POST'])
+@app.route("/")
+def health():
+    return "Virtual TA is live!"
+
+@app.route("/api/", methods=["POST"])
 def handle_question():
     data = request.get_json()
     if not data or 'question' not in data:
@@ -18,8 +24,8 @@ def handle_question():
     if image:
         try:
             image_data = base64.b64decode(image)
-            image_path = 'temp_image.webp'
-            with open(image_path, 'wb') as f:
+            image_path = "temp_image.webp"
+            with open(image_path, "wb") as f:
                 f.write(image_data)
         except:
             return jsonify({"error": "Invalid image"}), 400
@@ -30,7 +36,3 @@ def handle_question():
         os.remove(image_path)
 
     return jsonify({"answer": answer, "links": links}), 200
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
-    
