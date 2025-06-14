@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import base64
 import os
-from process_data import answer_question
+from src.process_data import answer_question
 
 app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests
