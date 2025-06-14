@@ -1,38 +1,26 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import base64
+from process_data import answer_question
 import os
-from src.process_data import answer_question
 
 app = Flask(__name__)
-CORS(app)  # Allow cross-origin requests
+CORS(app)
 
 @app.route("/")
-def health():
-    return "Virtual TA is live!"
+def home():
+    return "Virtual TA is running!"
 
 @app.route("/api/", methods=["POST"])
-def handle_question():
-    data = request.get_json()
-    if not data or 'question' not in data:
-        return jsonify({"error": "Missing question"}), 400
+def ask():
+    data = request.json
+    question = data.get("question")
+    image = data.get("image_path")  # Optional
 
-    question = data['question']
-    image = data.get('image', None)
-    image_path = None
+    if not question:
+        return jsonify({"error": "Question is required."}), 400
 
-    if image:
-        try:
-            image_data = base64.b64decode(image)
-            image_path = "temp_image.webp"
-            with open(image_path, "wb") as f:
-                f.write(image_data)
-        except:
-            return jsonify({"error": "Invalid image"}), 400
+    answer, links = answer_question(question, image_path=image)
+    return jsonify({"answer": answer, "links": links})
 
-    answer, links = answer_question(question, image_path)
-
-    if image_path and os.path.exists(image_path):
-        os.remove(image_path)
-
-    return jsonify({"answer": answer, "links": links}), 200
+if __name__ == "__main__":
+    app.run(debug=True)
