@@ -3,3 +3,4 @@ Werkzeug==2.0.3
 gunicorn
 requests==2.28.1
 beautifulsoup4
+flask-cors
