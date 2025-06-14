@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from process_data import answer_question
+from src.process_data import answer_question
 import os
 
 app = Flask(__name__)
