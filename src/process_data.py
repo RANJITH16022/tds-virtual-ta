@@ -1,31 +1,31 @@
-import json
+import sys
 import os
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
-# Simulated course content
-COURSE_CONTENT = "Use gpt-3.5-turbo-0125 for assignments unless specified. Tokenize with tiktoken."
+# Add the src/ directory to the Python path so imports work
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Load JSON path from root directory
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_FILE = os.path.join(BASE_DIR, 'discourse_data.json')
+from process_data import answer_question
 
-def answer_question(question, image_path=None):
-    discourse_data = []
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, 'r') as f:
-            discourse_data = json.load(f)
+app = Flask(__name__)
+CORS(app)
 
-    # Default answer
-    answer = "I couldn't find a specific answer. Check the course materials."
-    links = []
+@app.route("/")
+def home():
+    return "Virtual TA is running!"
 
-    if 'gpt-4o-mini' in question.lower() or 'gpt-3.5-turbo' in question.lower():
-        answer = "Use `gpt-3.5-turbo-0125`, even if AI Proxy supports `gpt-4o-mini`. Use OpenAI API directly."
-        links = [
-            {"url": "https://discourse.onlinedegree.iitm.ac.in/t/ga5-question-8-clarification/155939/4", "text": "Use the model mentioned in the question."},
-            {"url": "https://discourse.onlinedegree.iitm.ac.in/t/ga5-question-8-clarification/155939/3", "text": "Use a tokenizer like tiktoken."}
-        ]
-    elif 'tokenize' in question.lower():
-        answer = "Use tiktoken to tokenize text in Python."
-        links = discourse_data[1:2]
+@app.route("/api/", methods=["POST"])
+def ask():
+    data = request.json
+    question = data.get("question")
+    image = data.get("image_path")
 
-    return answer, links
+    if not question:
+        return jsonify({"error": "Question is required."}), 400
+
+    answer, links = answer_question(question, image_path=image)
+    return jsonify({"answer": answer, "links": links})
+
+if __name__ == "__main__":
+    app.run(debug=True)
