@@ -1,0 +1,29 @@
+prompts:
+  - "{{question}}"
+providers:
+- id: http
+  config:
+    url: http://localhost:8000/api/  # Update later with deployed URL
+    method: POST
+    headers:
+      Content-Type: application/json"
+    body:
+      question: "{{question}}"
+      image: "{{image}}"
+tests:
+  - description: Test GPT model
+    vars:
+      question: Should I use gpt-4o-mini which AI proxy supports, or gpt3.5-turbo?
+      image: null
+    assert:
+      - type: contains
+        value: "gpt-3.5-turbo-0125"
+      - type: contains
+        value: "https://discourse.onlinedegree.iitm.ac.in/t/ga5-question-8-clarification/155939/4"
+  - description: Test tokenization
+    vars:
+      question: How do I tokenize text in Python?
+      image: null
+    assert:
+      - type: contains
+        value: "tiktoken"
